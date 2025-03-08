@@ -5,6 +5,7 @@ import string
 from nltk.corpus import stopwords
 import nltk
 import logging
+import os  # Import the os module to access environment variables
 
 # Download NLTK stopwords (only needed once)
 nltk.download('stopwords')
@@ -79,5 +80,5 @@ def feedback():
 
 # Run the app
 if __name__ == '__main__':
-    app.run(debug=True)
-
+    port = int(os.environ.get('PORT', 5000))  # Use Render's PORT or default to 5000
+    app.run(host='0.0.0.0', port=port, debug=False)  # Bind to all interfaces and disable debug mode
