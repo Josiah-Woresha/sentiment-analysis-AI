@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentiment Analysis</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    <style>
+        /* General Styles */
+        body {
+            background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+            font-family: 'Arial', sans-serif;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh; /* Ensure the body takes at least the full viewport height */
+            margin: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            flex: 1; /* Allow the container to grow and push the footer down */
+        }
+
+        h1 {
+            color: #4a90e2;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 150px;
+            padding: 15px;
+            font-size: 16px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            resize: none;
+            transition: border-color 0.3s ease;
+        }
+
+        textarea:focus {
+            border-color: #4a90e2;
+            outline: none;
+        }
+
+        .btn-primary {
+            background-color: #4a90e2;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 10px;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background-color: #357abd;
+        }
+
+        .result {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .positive {
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .negative {
+            color: #dc3545;
+            font-weight: bold;
+        }
+
+        .confidence {
+            font-size: 18px;
+            color: #6c757d;
+        }
+
+        /* Footer Styles */
+        .footer {
+            text-align: center;
+            padding: 20px;
+            background: #4a90e2;
+            color: white;
+            border-radius: 10px 10px 0 0;
+            margin-top: auto; /* Push the footer to the bottom */
+        }
+
+        .footer a {
+            color: white;
+            text-decoration: underline;
+        }
+
+        /* Animations */
+        .animate__animated {
+            animation-duration: 1s;
+        }
+    </style>
+</head>
+<body>
+    <div class="container animate__animated animate__fadeIn">
+        <h1>Sentiment Analysis</h1>
+        <form method="POST">
+            <div class="form-group">
+                <textarea name="text" class="form-control" rows="5" placeholder="Enter your text here...">{{ user_input if user_input else '' }}</textarea>
+            </div>
+            <button type="submit" class="btn btn-primary mt-3" id="predict-button">
+                <span id="button-text">Predict Sentiment</span>
+                <span id="spinner" class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display: none;"></span>
+            </button>
+        </form>
+        {% if error %}
+        <div class="alert alert-danger mt-4" role="alert">
+            {{ error }}
+        </div>
+        {% endif %}
+        {% if sentiment %}
+        <div class="result mt-4 animate__animated animate__fadeIn">
+            <p>Sentiment: <span class="{{ 'positive' if sentiment == 'Positive' else 'negative' }}">{{ sentiment }}</span></p>
+            <p class="confidence">Confidence: {{ "%.2f"|format(confidence * 100) }}%</p>
+            <p>Was this prediction correct?</p>
+            <button class="btn btn-success" onclick="sendFeedback('correct')">Yes</button>
+            <button class="btn btn-danger" onclick="sendFeedback('incorrect')">No</button>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Footer -->
+    <div class="footer animate__animated animate__fadeInUp">
+        © 2025 Josiah Woresha. All Rights Reserved.
+    </div>
+
+    <!-- SVG Animation -->
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320" style="position: fixed; bottom: 0; left: 0; width: 100%; z-index: -1;">
+        <path fill="#4a90e2" fill-opacity="0.1" d="M0,160L48,149.3C96,139,192,117,288,128C384,139,480,181,576,192C672,203,768,181,864,160C960,139,1056,117,1152,106.7C1248,96,1344,96,1392,96L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+    </svg>
+
+    <script>
+        // Show spinner when form is submitted
+        document.querySelector('form').addEventListener('submit', function() {
+            document.getElementById('button-text').style.display = 'none';
+            document.getElementById('spinner').style.display = 'inline-block';
+        });
+
+        // Send feedback to the server
+        function sendFeedback(feedback) {
+            fetch('/feedback', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    user_input: "{{ user_input if user_input else '' }}",
+                    sentiment: "{{ sentiment if sentiment else '' }}",
+                    feedback: feedback
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert("Thank you for your feedback!");
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+        }
+    </script>
+</body>
+</html>
